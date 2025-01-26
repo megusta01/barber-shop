@@ -2,7 +2,7 @@ import React from 'react'
 
 const Login = () => {
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`
+    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/redirect`
   }
 
   return (

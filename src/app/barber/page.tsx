@@ -1,80 +1,93 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import Calendar from 'react-calendar'
-import axios from 'axios'
-import 'react-calendar/dist/Calendar.css'
+import React, { useState, useEffect } from 'react';
+import Calendar from '@/components/Calendar';
 
 const BarberAppointmentsPage = () => {
-    const [selectedDate, setSelectedDate] = useState(new Date())
-    interface Appointment {
-        date: string;
-        customerName: string;
-        service: string;
-    }
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const [appointments, setAppointments] = useState<Appointment[]>([])
+    // Função para buscar agendamentos usando fetch
+    const fetchAppointments = async (date: Date) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointment?date=${date.toISOString().split('T')[0]}`, 
+                {
+                    method: 'GET',
+                    credentials: 'include', // Para enviar cookies, se necessário
+                }
+            );
 
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointments`,
-                    {
-                        params: { date: selectedDate.toISOString() },
-                        withCredentials: true,
-                    }
-                )
-                setAppointments(response.data)
-            } catch (error) {
-                console.error('Erro ao buscar agendamentos:', error)
+            if (!response.ok) {
+                throw new Error('Erro ao buscar agendamentos');
             }
-        }
 
-        fetchAppointments()
-    }, [selectedDate])
+            const data = await response.json();
+            setAppointments(data);
+        } catch (err: any) {
+            console.error('Erro ao buscar agendamentos:', err.message);
+            setError('Não foi possível carregar os agendamentos. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Chama fetchAppointments sempre que a data selecionada muda
+    useEffect(() => {
+        fetchAppointments(selectedDate);
+    }, [selectedDate]);
 
     return (
-        <div className='flex flex-col lg:flex-row container mx-auto px-4 py-6'>
-            {/* Calendário */}
-            <div className='w-full lg:w-1/3'>
-                <Calendar
-                    onChange={(value) => setSelectedDate(value as Date)} // Força o tipo para `Date`
-                    value={selectedDate}
-                    className='border border-gray-300 rounded-lg shadow-md'
-                />
+        <div className="container mx-auto px-4 py-6">
+            <h1 className="text-2xl font-bold mb-6">Agendamentos do Barbeiro</h1>
 
-            </div>
+            {/* Componente de Calendário */}
+            <Calendar
+                onDateSelect={(date) => setSelectedDate(date || new Date())}
+                selectedDate={selectedDate}
+            />
 
-            {/* Lista de Agendamentos */}
-            <div className='w-full lg:w-2/3 mt-6 lg:mt-0 lg:ml-8'>
-                <h2 className='text-xl font-bold mb-4'>
-                    Clientes para {selectedDate.toLocaleDateString()}
+            {/* Exibição de Erros */}
+            {error && <p className="text-red-500 mt-4">{error}</p>}
+
+            {/* Lista de Clientes */}
+            <div className="mt-6">
+                <h2 className="text-lg font-semibold mb-4">
+                    Agendamentos para {selectedDate.toLocaleDateString('pt-BR')}
                 </h2>
 
-                {appointments.length === 0 ? (
-                    <p className='text-gray-500'>Nenhum cliente agendado neste dia.</p>
+                {loading ? (
+                    <p className="text-gray-500">Carregando agendamentos...</p>
+                ) : appointments.length === 0 ? (
+                    <p className="text-gray-500">Nenhum cliente agendado para esta data.</p>
                 ) : (
-                    <div className='space-y-4'>
-                        {appointments.map((appointment, index) => (
-                            <div key={index} className='flex items-center'>
-                                <div className='w-20 text-gray-600 font-bold'>
+                    <ul className="space-y-4">
+                        {appointments.map((appointment: any, index: number) => (
+                            <li key={index} className="p-4 border rounded-lg shadow-md">
+                                <p>
+                                    <strong>Cliente:</strong> {appointment.customerName}
+                                </p>
+                                <p>
+                                    <strong>Serviço:</strong> {appointment.service}
+                                </p>
+                                <p>
+                                    <strong>Horário:</strong>{' '}
                                     {new Date(appointment.date).toLocaleTimeString([], {
                                         hour: '2-digit',
                                         minute: '2-digit',
                                     })}
-                                </div>
-                                <div className='flex-grow border-l pl-4'>
-                                    <p className='text-gray-700 font-medium'>{appointment.customerName}</p>
-                                    <p className='text-gray-500 text-sm'>{appointment.service}</p>
-                                </div>
-                            </div>
+                                </p>
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default BarberAppointmentsPage
+export default BarberAppointmentsPage;

@@ -1,22 +1,25 @@
-'use client'
-
 import React from 'react'
-import Calendar, { CalendarProps } from 'react-calendar'
-import 'react-calendar/dist/Calendar.css'
+import { DayPicker } from 'react-day-picker'
+import 'react-day-picker/dist/style.css'
+import { ptBR } from 'date-fns/locale'
 
-interface CalendarComponentProps {
-  selectedDate: Date
-  onDateChange: (value: Date) => void // Ajusta a tipagem da função de mudança
+interface CalendarProps {
+  onDateSelect: (date: Date | undefined) => void // Agora aceita o tipo correto
+  selectedDate: Date | undefined
 }
 
-const CalendarComponent: React.FC<CalendarComponentProps> = ({ selectedDate, onDateChange }) => {
+const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect }) => {
   return (
-    <Calendar
-      onChange={(value) => onDateChange(value as Date)} // Força o tipo para `Date`
-      value={selectedDate}
-      className='border border-gray-300 rounded-lg shadow-md'
-    />
+    <div>
+      <h1 className="text-xl font-bold mb-4">Selecione uma data</h1>
+      <DayPicker
+        mode="single"
+        selected={selectedDate}
+        onSelect={onDateSelect} // Callback para a data selecionada
+        locale={ptBR}
+      />
+    </div>
   )
 }
 
-export default CalendarComponent
+export default Calendar
