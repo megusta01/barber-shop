@@ -19,3 +19,61 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Estilize o container principal */
+.react-calendar {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Botões de navegação */
+.react-calendar__navigation button {
+  color: #2563eb;
+  font-size: 1rem;
+  font-weight: bold;
+  background: none;
+  border: none;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.react-calendar__navigation button:enabled:hover {
+  background-color: #f0f4ff;
+  border-radius: 5px;
+}
+
+/* Dias */
+.react-calendar__tile {
+  padding: 10px;
+  background: none;
+  border-radius: 50px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.react-calendar__tile--active {
+  background: #2563eb;
+  color: white;
+  font-weight: bold;
+}
+
+.react-calendar__tile--active:enabled:hover {
+  background: #E0A83B;
+}
+
+.react-calendar__tile:enabled:hover {
+  background: #f0f4ff;
+}
+
+/* Cabeçalho de semana */
+.react-calendar__month-view__weekdays {
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+}
+
