@@ -1,8 +1,10 @@
+'use client'
+
 import React from 'react'
 
 const Login = () => {
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/redirect`
+    window.location.href = `https://barber-api-kp65.onrender.com/auth/google`
   }
 
   return (

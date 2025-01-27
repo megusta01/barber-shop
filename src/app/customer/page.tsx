@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Calendar from '@/components/Calendar';
 import axios from 'axios';
 
@@ -25,17 +25,19 @@ const CustomerAppointmentPage = () => {
         '17:00',
     ];
 
-    const fetchAppointments = async (date: Date) => {
+    // Função para buscar horários disponíveis
+    const fetchAppointments = useCallback(async (date: Date) => {
         setLoading(true);
         setError(null);
         try {
             const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointment`,
                 {
-                    params: { date: date.toISOString().split('T')[0] }, // Envia a data no formato 'YYYY-MM-DD'
+                    params: { date: date.toISOString().split('T')[0] },
                     withCredentials: true,
                 }
             );
+
             const bookedTimes = response.data.map((appointment: { date: string }) =>
                 new Date(appointment.date).toLocaleTimeString([], {
                     hour: '2-digit',
@@ -43,7 +45,6 @@ const CustomerAppointmentPage = () => {
                 })
             );
 
-            // Filtra os horários ainda disponíveis
             const freeTimes = allTimes.filter((time) => !bookedTimes.includes(time));
             setAvailableTimes(freeTimes);
         } catch (err) {
@@ -52,12 +53,12 @@ const CustomerAppointmentPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [allTimes]);
 
     useEffect(() => {
         fetchAppointments(selectedDate);
-        setSelectedTime(null); // Reseta o horário selecionado quando a data muda
-    }, [selectedDate]);
+        setSelectedTime(null);
+    }, [fetchAppointments, selectedDate]);
 
     const handleConfirm = async () => {
         if (!selectedTime) {
@@ -89,16 +90,13 @@ const CustomerAppointmentPage = () => {
         <div className="container mx-auto px-4 py-6">
             <h1 className="text-2xl font-bold mb-6">Agendar Horário</h1>
 
-            {/* Calendário */}
             <Calendar
                 onDateSelect={(date) => setSelectedDate(date || new Date())}
                 selectedDate={selectedDate}
             />
 
-            {/* Mensagem de erro */}
             {error && <p className="text-red-500 mt-4">{error}</p>}
 
-            {/* Lista de Horários Disponíveis */}
             <div className="mt-6">
                 <h2 className="text-lg font-semibold mb-4">
                     Horários disponíveis para {selectedDate.toLocaleDateString('pt-BR')}
@@ -118,7 +116,6 @@ const CustomerAppointmentPage = () => {
                                         ? 'bg-blue-600 text-white'
                                         : 'bg-gray-200 hover:bg-gray-300'
                                 }`}
-                                aria-selected={selectedTime === time}
                             >
                                 {time}
                             </button>
@@ -127,7 +124,6 @@ const CustomerAppointmentPage = () => {
                 )}
             </div>
 
-            {/* Botão de Confirmação */}
             <div className="text-center mt-6">
                 <button
                     onClick={handleConfirm}

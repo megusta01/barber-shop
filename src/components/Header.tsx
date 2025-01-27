@@ -31,10 +31,10 @@ const Header = () => {
 
         {/* Botões */}
         <div className='flex items-center space-x-4'>
-          <Link href='/login' className='py-2 px-4 border rounded-lg text-gray-700 hover:bg-gray-100'>
+          <Link href='https://barber-api-kp65.onrender.com/auth/google/redirect' className='py-2 px-4 border rounded-lg text-gray-700 hover:bg-gray-100'>
             Login
           </Link>
-          <Link href='/signup' className='py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800'>
+          <Link href='/login' className='py-2 px-4 bg-black text-white rounded-lg hover:bg-gray-800'>
             Signup
           </Link>
         </div>
