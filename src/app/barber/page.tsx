@@ -11,7 +11,7 @@ interface Appointment {
     date: string;
 }
 
-const BarberAppointmentsPage = () => {
+const BarberAppointmentsPage: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -22,7 +22,7 @@ const BarberAppointmentsPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(
+            const response = await axios.get<Appointment[]>(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointment/searchAppointment`,
                 {
                     params: { date: date.toISOString() },
@@ -31,8 +31,9 @@ const BarberAppointmentsPage = () => {
             );
 
             setAppointments(response.data);
-        } catch (err: any) {
-            console.error('Erro ao buscar agendamentos:', err.message);
+        } catch (err: unknown) {
+            const errorMessage = (err as Error).message || 'Erro desconhecido';
+            console.error('Erro ao buscar agendamentos:', errorMessage);
             setError('Não foi possível carregar os agendamentos. Tente novamente.');
         } finally {
             setLoading(false);
