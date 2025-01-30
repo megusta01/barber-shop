@@ -1,29 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Calendar from '@/components/Calendar';
 import axios from 'axios';
 
-const CustomerAppointmentPage = () => {
+const CustomerAppointmentPage: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Lista de horários possíveis
-    const allTimes = [
-        '08:00',
-        '09:00',
-        '10:00',
-        '11:00',
-        '12:00',
-        '13:00',
-        '14:00',
-        '15:00',
-        '16:00',
-        '17:00',
-    ];
+    // Memoiza a lista de horários possíveis
+    const allTimes = useMemo(
+        () => [
+            '08:00',
+            '09:00',
+            '10:00',
+            '11:00',
+            '12:00',
+            '13:00',
+            '14:00',
+            '15:00',
+            '16:00',
+            '17:00',
+        ],
+        []
+    );
 
     // Função para buscar horários disponíveis
     const fetchAppointments = useCallback(async (date: Date) => {
@@ -31,7 +34,7 @@ const CustomerAppointmentPage = () => {
         setError(null);
         try {
             const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointment`,
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointments`,
                 {
                     params: { date: date.toISOString().split('T')[0] },
                     withCredentials: true,
