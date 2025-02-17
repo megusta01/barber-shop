@@ -2,7 +2,7 @@
 
 import { loginWithGoogle } from '@/services/api'
 import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export default function Login() {
   const router = useRouter()
