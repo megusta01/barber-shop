@@ -1,6 +1,6 @@
 import Header from '@/components/dashboard/Header'
 
-export default function BarberPage() {
+export default function BarberDashboard() {
     return (
         <>
             <Header />

@@ -1,6 +1,6 @@
 import Header from '@/components/dashboard/Header'
 
-export default function ClientPage() {
+export default function ClientDashboard() {
     return (
         <>
             <Header />

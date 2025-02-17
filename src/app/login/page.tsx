@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function Login() {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   // Verifica se já existe um token válido
   useEffect(() => {
