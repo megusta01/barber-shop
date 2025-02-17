@@ -1,0 +1,23 @@
+.container {
+    display: flex;
+    padding: 10px;
+    justify-content: center;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.icon {
+    font-size: 5px;
+    color: #4285F4;
+    width: 30px;
+    height: 30px;
+}
