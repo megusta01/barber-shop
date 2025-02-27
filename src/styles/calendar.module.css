@@ -1,0 +1,46 @@
+/* .calendarContainer {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  } */
+  
+  .calendar {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+  
+  .calendar span {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  /* Estiliza os dias normais */
+  .calendar button {
+    padding: 10px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .calendar button:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Dias desabilitados (exemplo: antes da data mínima) */
+  .calendar button:disabled,
+  .calendar .disabled-day {
+    color: #b0b0b0 !important;
+    background: #f8f8f8 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
