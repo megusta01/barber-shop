@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import styles from "../../../styles/select.module.css";
+import { refreshToken } from "@/services/api";
 
 interface Barber {
   _id: string;
@@ -19,14 +20,36 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
 
   useEffect(() => {
     async function fetchBarbers() {
+      setLoading(true);
+      setError("");
+
+      // Obtendo o token do localStorage
+      const token = localStorage.getItem("accessToken");
+
+      if (!token) {
+        console.error("❌ Erro: Token JWT não encontrado no localStorage");
+        setError("Usuário não autenticado. Faça login novamente.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/searchUser?role=barber`);
-        console.log('Resposta completa:', response);
-        console.log('Dados da resposta:', response.data);
         
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/searchUser?role=barber`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("✅ Resposta completa:", response);
+        console.log("✅ Dados da resposta:", response.data);
+
         // Garantindo que temos um array de barbeiros
         let barbersArray = [];
-        if (response.data && typeof response.data === 'object') {
+        if (response.data && typeof response.data === "object") {
           if (Array.isArray(response.data)) {
             barbersArray = response.data;
           } else if (Array.isArray(response.data.data)) {
@@ -35,10 +58,11 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
             barbersArray = response.data.users;
           }
         }
-        
-        console.log('Array de barbeiros processado:', barbersArray);
+
+        console.log("✅ Array de barbeiros processado:", barbersArray);
         setBarbers(barbersArray);
       } catch (err) {
+        console.error("❌ Erro ao carregar os barbeiros:", err);
         setError("Erro ao carregar os barbeiros.");
       } finally {
         setLoading(false);
