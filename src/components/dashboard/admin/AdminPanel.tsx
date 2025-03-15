@@ -13,17 +13,19 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const token = localStorage.getItem('accessToken')
 
   useEffect(() => {
     async function fetchUsers() {
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${token}`,
           },
         });
         setUsers(response.data);
       } catch (err) {
+        console.error(err);
         setError("Erro ao carregar usuários.");
       } finally {
         setLoading(false);
@@ -46,7 +48,7 @@ export default function AdminPanel() {
         { role: newRole },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -55,6 +57,7 @@ export default function AdminPanel() {
         user._id === userId ? { ...user, role: newRole } : user
       ));
     } catch (err) {
+      console.error(err);
       alert("Erro ao alterar a role.");
     }
   };
