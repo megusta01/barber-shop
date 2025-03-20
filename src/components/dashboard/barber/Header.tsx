@@ -1,43 +1,39 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
+import React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
-const Header: React.FC = () => {
-  const [displayName, setDisplayName] = useState('Usuário')
+export default function BarberHeader() {
+  const router = useRouter()
 
-  useEffect(() => {
-    const storedName = localStorage.getItem('displayName')
-    if (storedName) {
-      setDisplayName(storedName)
-    }
-  }, [])
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    router.push('/login')
+  }
 
   return (
-    <header className="flex justify-around items-center p-4 bg-gray-100 shadow-md">
-      <div className="flex items-center">
-        <Image src='/logo-barber-shop.png' alt="Logo" width={150} height={100} priority={true} />
+    <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
+      <div className="flex items-center space-x-6">
+        <Link href="/dashboard/barber">
+          <span className="text-xl font-bold cursor-pointer">Dashboard</span>
+        </Link>
+        <Link href="/dashboard/barber/appointments">
+          <span className="cursor-pointer">Meus Agendamentos</span>
+        </Link>
+        <Link href="/dashboard/barber/availability">
+          <span className="cursor-pointer">Criar Horários</span>
+        </Link>
       </div>
       <div>
-        <nav>
-          <ul>
-            <li>
-              Agendamentos
-            </li>
-            <li>
-              Clientes
-            </li>
-            <li>
-              Configurações
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <div>
-        <span className="text-lg font-medium">Olá, {displayName}</span>
+        <button
+          onClick={handleLogout}
+          className="bg-white text-blue-600 px-3 py-1 rounded font-semibold"
+        >
+          Sair
+        </button>
       </div>
     </header>
   )
 }
-
-export default Header

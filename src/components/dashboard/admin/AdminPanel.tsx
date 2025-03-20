@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import styles from "../../../styles/admin.module.css";
+import api from "@/services/api";
+import styles from "@/styles/admin.module.css";
 
 interface User {
   _id: string;
@@ -13,16 +13,12 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const token = localStorage.getItem('accessToken')
+  const token = localStorage.getItem('refreshToken')
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users`);
         setUsers(response.data);
       } catch (err) {
         console.error(err);
@@ -43,17 +39,11 @@ export default function AdminPanel() {
     }
 
     try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userId}`,
+      await api.patch(`/users/${userId}`,
         { role: newRole },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
       );
 
-      setUsers(users.map(user => 
+      setUsers(users.map(user =>
         user._id === userId ? { ...user, role: newRole } : user
       ));
     } catch (err) {
@@ -88,7 +78,7 @@ export default function AdminPanel() {
                 <td>{user.role}</td>
                 <td>
                   {user.role !== "ADMIN" && (
-                    <button 
+                    <button
                       onClick={() => toggleRole(user._id, user.role)}
                       className={styles.toggleButton}
                     >

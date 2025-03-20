@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import styles from "../../../styles/select.module.css";
-import { refreshToken } from "@/services/api";
+import api from "@/services/api";
+import styles from "@/styles/select.module.css";
 
 interface Barber {
   _id: string;
@@ -17,37 +16,20 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  
 
   useEffect(() => {
     async function fetchBarbers() {
       setLoading(true);
       setError("");
 
-      // Obtendo o token do localStorage
-      const token = localStorage.getItem("accessToken");
-
-      if (!token) {
-        console.error("❌ Erro: Token JWT não encontrado no localStorage");
-        setError("Usuário não autenticado. Faça login novamente.");
-        setLoading(false);
-        return;
-      }
-
       try {
         
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/searchUser?role=barber`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await api.get(`/users/searchUser?role=barber`,);
 
         console.log("✅ Resposta completa:", response);
         console.log("✅ Dados da resposta:", response.data);
 
-        // Garantindo que temos um array de barbeiros
         let barbersArray = [];
         if (response.data && typeof response.data === "object") {
           if (Array.isArray(response.data)) {

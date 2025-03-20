@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import axios from 'axios'
+import api from '@/services/api'
 import getUserIdFromToken from '@/hooks/clientId'
 
 interface ScheduleModalProps {
@@ -11,32 +11,22 @@ interface ScheduleModalProps {
 
 const ScheduleModal: React.FC<ScheduleModalProps> = ({ selectedSlot, barberId, onClose }) => {
   const handleSchedule = async () => {
-    const token = localStorage.getItem('accessToken')
     const costumerId = getUserIdFromToken()
 
-    if (!token || !costumerId || !selectedSlot) {
+    if (!costumerId || !selectedSlot) {
       alert('Erro ao obter informações para o agendamento')
       return
     }
 
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointments`,
-        {
-          date: selectedSlot.date,
-          costumer: costumerId,
-          barberId: barberId,
-          status: 'pending',
-          service: 'haircut',
-          isPaid: false,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+      await api.post('/appointments', {
+        date: selectedSlot.date,
+        costumer: costumerId,
+        barberId: barberId,
+        status: 'pending',
+        service: 'haircut',
+        isPaid: false,
+      })
       alert('Agendamento realizado com sucesso!')
       onClose()
     } catch (err: any) {
@@ -49,12 +39,20 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ selectedSlot, barberId, o
       <div className="bg-white p-6 rounded-lg shadow-lg">
         <h3 className="text-lg font-semibold mb-4">Confirmar Agendamento</h3>
         <p>Você deseja agendar um horário para:</p>
-        <p className="font-bold">{new Date(selectedSlot.date).toLocaleString('pt-BR', { timeZone: 'UTC' })}</p>
+        <p className="font-bold">
+          {new Date(selectedSlot.date).toLocaleString('pt-BR', { timeZone: 'UTC' })}
+        </p>
         <div className="mt-4 flex justify-end space-x-2">
-          <button className="bg-gray-400 text-white px-4 py-2 rounded" onClick={onClose}>
+          <button
+            className="bg-gray-400 text-white px-4 py-2 rounded"
+            onClick={onClose}
+          >
             Cancelar
           </button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleSchedule}>
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={handleSchedule}
+          >
             Confirmar
           </button>
         </div>

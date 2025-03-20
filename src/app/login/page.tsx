@@ -9,7 +9,7 @@ export default function Login() {
 
   // Verifica se já existe um token válido
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('refreshToken')
     const role = localStorage.getItem('role')
 
     if (token && role) {

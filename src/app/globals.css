@@ -1,4 +1,5 @@
 @import '../styles/register.module.css';
+@import '../styles/calendar.module.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

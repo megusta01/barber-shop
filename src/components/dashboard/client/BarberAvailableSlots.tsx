@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import api from '@/services/api'
 import ScheduleModal from '../client/ScheduleModal';
 
 interface AvailableSlot {
@@ -25,24 +25,11 @@ const BarberAvailableSlots: React.FC<BarberAvailableSlotsProps> = ({ barberId })
     }
 
     async function fetchAvailableSlots() {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        console.error("Erro: Token JWT não encontrado no localStorage");
-        setError("Usuário não autenticado. Faça login novamente.");
-        return;
-      }
       setLoading(true);
       setError(null);
 
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/appointments/barberSchedule/${barberId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            },
-          }
-        );
+        const res = await api.get(`/appointments/barberSchedule/${barberId}`);
 
         if (!res.data || !res.data.availability) {
           setError("Resposta inválida da API");

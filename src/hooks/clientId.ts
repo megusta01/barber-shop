@@ -2,7 +2,7 @@
 import {jwtDecode} from "jwt-decode";
 
 interface DecodedToken {
-  id?: string;  // Outros armazenam diretamente em 'id'
+  id: string;
 }
 
 export default function getUserIdFromToken(): string | null {
@@ -21,5 +21,4 @@ export default function getUserIdFromToken(): string | null {
     return null;
   }
 };
-
 
