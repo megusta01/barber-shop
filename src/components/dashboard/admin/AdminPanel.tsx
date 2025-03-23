@@ -1,96 +1,59 @@
-import { useEffect, useState } from "react";
-import api from "@/services/api";
-import styles from "@/styles/admin.module.css";
+import { useEffect, useState } from 'react'
+import api from '@/services/api'
+import UserTable from './UserTable'
 
-interface User {
-  _id: string;
-  displayName: string;
-  email: string;
-  role: "CLIENT" | "BARBER" | "ADMIN";
+export interface User {
+  _id: string
+  displayName: string
+  email: string
+  role: 'client' | 'barber' | 'admin'
 }
 
 export default function AdminPanel() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const token = localStorage.getItem('refreshToken')
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await api.get(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users`);
-        setUsers(response.data);
+        const response = await api.get('/users')
+        setUsers(response.data)
       } catch (err) {
-        console.error(err);
-        setError("Erro ao carregar usuários.");
+        console.error(err)
+        setError('Erro ao carregar usuários.')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
+    fetchUsers()
+  }, [])
 
-    fetchUsers();
-  }, []);
-
-  const toggleRole = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === "BARBER" ? "CLIENT" : "BARBER";
-
-    if (!window.confirm(`Deseja alterar a role deste usuário para ${newRole}?`)) {
-      return;
-    }
+  const handleRoleChange = async (userId: string, newRole: 'client' | 'barber') => {
+    if (!window.confirm(`Deseja alterar a função deste usuário para ${newRole}?`)) return
 
     try {
-      await api.patch(`/users/${userId}`,
-        { role: newRole },
-      );
-
-      setUsers(users.map(user =>
-        user._id === userId ? { ...user, role: newRole } : user
-      ));
+      await api.patch(`/users/${userId}`, { role: newRole })
+      setUsers((prev) =>
+        prev.map((user) => (user._id === userId ? { ...user, role: newRole } : user))
+      )
     } catch (err) {
-      console.error(err);
-      alert("Erro ao alterar a role.");
+      console.error(err)
+      alert('Erro ao alterar a função.')
     }
-  };
+  }
 
   return (
-    <div className={styles.adminContainer}>
-      <h2 className={styles.title}>Painel de Administração</h2>
+    <div className="bg-white rounded-xl shadow-md p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Painel de Administração</h2>
 
       {loading ? (
-        <p>Carregando usuários...</p>
+        <p className="text-sm text-gray-500">Carregando usuários...</p>
       ) : error ? (
-        <p className={styles.error}>{error}</p>
+        <p className="text-sm text-red-600">{error}</p>
       ) : (
-        <table className={styles.userTable}>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Função</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user._id}>
-                <td>{user.displayName}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
-                <td>
-                  {user.role !== "ADMIN" && (
-                    <button
-                      onClick={() => toggleRole(user._id, user.role)}
-                      className={styles.toggleButton}
-                    >
-                      Tornar {user.role === "BARBER" ? "Cliente" : "Barbeiro"}
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <UserTable users={users} onRoleChange={handleRoleChange} />
       )}
     </div>
-  );
+  )
 }
