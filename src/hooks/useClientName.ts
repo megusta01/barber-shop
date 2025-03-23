@@ -2,10 +2,10 @@
 import {jwtDecode} from "jwt-decode";
 
 interface DecodedToken {
-  id: string;
+  displayName: string;
 }
 
-export default function useClientId(): string | null {
+export default function getUserNameFromToken(): string | null {
   const token = localStorage.getItem("accessToken");
 
   if (!token) {
@@ -15,7 +15,7 @@ export default function useClientId(): string | null {
 
   try {
     const decoded: DecodedToken = jwtDecode(token);
-    return decoded.id ||  null;
+    return decoded.displayName ||  null;
   } catch (error) {
     console.error("Erro ao decodificar o token:", error);
     return null;
