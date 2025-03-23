@@ -1,84 +1,98 @@
-// src/components/CreateAvailableSlotForm.tsx
-import React, { useState } from 'react';
-import api from '@/services/api';
+import React, { useState } from 'react'
+import api from '@/services/api'
 
 interface CreateAvailableSlotFormProps {
-  barberId: string | null;
-  onSuccess: () => void;
+  barberId: string | null
+  onSuccess: () => void
 }
 
 const CreateAvailableSlotForm: React.FC<CreateAvailableSlotFormProps> = ({ barberId, onSuccess }) => {
-  const [date, setDate] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [date, setDate] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
+    e.preventDefault()
 
     if (!barberId) {
-      setError('Barbeiro não identificado.');
-      setLoading(false);
-      return;
+      setError('Barbeiro não identificado.')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    setSuccessMessage(null)
+
+    const inputDate = new Date(date)
+    if (isNaN(inputDate.getTime())) {
+      setError('Data inválida. Por favor, verifique a data e hora informadas.')
+      setLoading(false)
+      return
+    }
+
+    const now = new Date()
+    if (inputDate <= now) {
+      setError('Por favor, selecione uma data e hora futuras.')
+      setLoading(false)
+      return
     }
 
     try {
-      const availableDate = new Date(date).toISOString();
+      const availableDate = inputDate.toISOString()
       await api.patch(`/appointments/addDateBarberSchedule/${barberId}`, {
         date: [availableDate],
-      });
+      })
 
-      setSuccessMessage('Horário disponível criado com sucesso!');
-      setDate('');
-      onSuccess(); // Atualiza a agenda após o sucesso
+      setSuccessMessage('Horário disponível criado com sucesso!')
+      setDate('')
+      onSuccess()
     } catch (err) {
-      console.error('Erro ao criar horário disponível', err);
-      setError('Erro ao criar horário disponível. Tente novamente.');
+      console.error('Erro ao criar horário disponível', err)
+      setError('Erro ao criar horário disponível. Tente novamente.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-xl p-6 w-full space-y-6">
       <h2 className="text-2xl font-bold text-gray-800 text-center">Criar Horário Disponível</h2>
 
-      <div className="flex flex-col">
-        <label className="text-gray-700 font-medium">Data e Hora:</label>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">Data e Hora</label>
         <input
           type="datetime-local"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           required
-          className="mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-400 focus:outline-none"
+          disabled={loading}
+          className="w-full p-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:outline-none"
         />
       </div>
 
-      <div className="flex flex-col">
-        <label className="text-gray-700 font-medium">ID do Barbeiro:</label>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700">ID do Barbeiro</label>
         <input
           type="text"
           value={barberId || 'Carregando...'}
           disabled
-          className="mt-1 p-2 border border-gray-300 rounded-md bg-gray-200 cursor-not-allowed"
+          className="w-full p-2 border border-gray-300 bg-gray-100 rounded-md text-sm cursor-not-allowed"
         />
       </div>
 
-      {error && <p className="text-red-600">{error}</p>}
-      {successMessage && <p className="text-green-600">{successMessage}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
       >
         {loading ? 'Criando...' : 'Criar Horário Disponível'}
       </button>
     </form>
-  );
-};
+  )
+}
 
-export default CreateAvailableSlotForm;
+export default CreateAvailableSlotForm
