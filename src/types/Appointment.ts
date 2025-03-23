@@ -6,7 +6,10 @@ export interface Appointment {
       _id: string;
       displayName: string;
     };
-    barberId: string;
+    barberId: {
+      _id: string;
+      displayName: string;
+    }
     status: string;
     service: string;
     isPaid: boolean;
