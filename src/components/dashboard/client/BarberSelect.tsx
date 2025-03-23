@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
-import styles from "@/styles/select.module.css";
 
 interface Barber {
   _id: string;
@@ -16,7 +15,6 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
 
   useEffect(() => {
     async function fetchBarbers() {
@@ -24,13 +22,9 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
       setError("");
 
       try {
-        
-        const response = await api.get(`/users/searchUser?role=barber`,);
-
-        console.log("✅ Resposta completa:", response);
-        console.log("✅ Dados da resposta:", response.data);
-
+        const response = await api.get(`/users/searchUser?role=barber`);
         let barbersArray = [];
+
         if (response.data && typeof response.data === "object") {
           if (Array.isArray(response.data)) {
             barbersArray = response.data;
@@ -41,10 +35,9 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
           }
         }
 
-        console.log("✅ Array de barbeiros processado:", barbersArray);
         setBarbers(barbersArray);
       } catch (err) {
-        console.error("❌ Erro ao carregar os barbeiros:", err);
+        console.error("Erro ao carregar os barbeiros:", err);
         setError("Erro ao carregar os barbeiros.");
       } finally {
         setLoading(false);
@@ -55,15 +48,16 @@ export default function BarberSelect({ onChange, value }: BarberSelectProps) {
   }, []);
 
   return (
-    <div className={styles.selectContainer}>
+    <div className="max-w-md mx-auto my-6">
+
       {loading ? (
-        <p className={styles.loadingText}>Carregando barbeiros...</p>
+        <p className="text-sm text-gray-500">Carregando barbeiros...</p>
       ) : error ? (
-        <p className={styles.errorText}>{error}</p>
+        <p className="text-sm text-red-500">{error}</p>
       ) : (
-        <select 
-          className={styles.select} 
-          onChange={(e) => onChange?.(e.target.value)} 
+        <select
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm text-sm text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          onChange={(e) => onChange?.(e.target.value)}
           value={value}
         >
           <option value="">Selecione um barbeiro</option>
