@@ -7,9 +7,9 @@
   ],
   "scripts": {
     "build:shared": "npm run build -w @barbearia/shared",
-    "dev:api": "npm run build:shared && npm run dev -w @barbearia/api",
-    "dev:web": "npm run build:shared && npm run dev -w @barbearia/web",
-    "build": "npm run build:shared && npm run build -w @barbearia/api && npm run build -w @barbearia/web",
+    "dev:api": "npm run dev -w @barbearia/api",
+    "dev:web": "npm run dev -w @barbearia/web",
+    "build": "npm run build -w @barbearia/api && npm run build -w @barbearia/web",
     "lint": "npm run build:shared && npm run lint --workspaces --if-present",
     "typecheck": "npm run build:shared && npm run typecheck --workspaces --if-present",
     "test": "npm run build:shared && npm run test -w @barbearia/api",

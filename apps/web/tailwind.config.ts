@@ -1,20 +1,9 @@
-import {heroui} from '@heroui/theme';
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 export default {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@heroui/theme/dist/components/(calendar|button|ripple|spinner).js"
-  ],
+  content: ['./src/**/*.{ts,tsx}'],
   theme: {
-    extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
-    },
+    extend: {},
   },
-  plugins: [heroui()],
-} satisfies Config;
+  plugins: [],
+} satisfies Config

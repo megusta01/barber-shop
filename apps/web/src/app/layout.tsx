@@ -1,16 +1,20 @@
-import '../app/globals.css'
-import React from 'react'
+import './globals.css'
 
-export const metadata = {
-  title: 'Barbearia',
-  description: 'Sistema de agendamentos',
+import type { Metadata } from 'next'
+import { ReactNode } from 'react'
+
+import { AuthProvider } from '@/lib/auth/AuthProvider'
+
+export const metadata: Metadata = {
+  title: { default: 'Barbearia', template: '%s · Barbearia' },
+  description: 'Agendamento online para barbearias: clientes, barbeiros e horários em um só lugar.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang='pt-BR'>
-      <body className='bg-gray-50 text-gray-800'>
-        {children}
+    <html lang="pt-BR">
+      <body>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

@@ -1,28 +1,32 @@
 'use client'
 
-import React from 'react'
-import Header from '@/components/dashboard/barber/Header'
-import { useBarberId } from '@/hooks/useBarberId'
-import { useBarberSchedule } from '@/hooks/useBarberSchedule'
-import CreateAvailableSlotForm from '@/components/dashboard/barber/CreateAvailable'
-import AvailableSlotsList from '@/components/dashboard/barber/AvailableList'
+import { useCallback } from 'react'
 
-export default function CreateAvailableSlot() {
-  const barberId = useBarberId()
-  const { schedule, fetchSchedule } = useBarberSchedule(barberId)
+import { Alert } from '@/components/ui/Alert'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Spinner } from '@/components/ui/Spinner'
+import { AddSlotsForm } from '@/features/availability/AddSlotsForm'
+import { SlotList } from '@/features/availability/SlotList'
+import { useAsync } from '@/hooks/useAsync'
+import { availabilityApi } from '@/lib/api/endpoints'
+import { useSession } from '@/lib/auth/AuthProvider'
+
+export default function AvailabilityPage() {
+  const { userId } = useSession()
+  const load = useCallback(() => availabilityApi.get(userId), [userId])
+  const { data, error, loading, setData } = useAsync(load)
 
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-[#F5F6F8] px-4 py-10">
-        <div className="max-w-xl mx-auto space-y-6">
-          <CreateAvailableSlotForm barberId={barberId} onSuccess={fetchSchedule} />
-          <AvailableSlotsList
-            key={JSON.stringify(schedule?.availability)}
-            schedule={schedule}
-            barberId={barberId}
-            onSuccess={fetchSchedule}
-          />
+      <PageHeader title="Disponibilidade" description="Abra horários para os clientes agendarem." />
+      <div className="grid gap-6 lg:grid-cols-[22rem,1fr]">
+        <div>
+          <AddSlotsForm barberId={userId} onAdded={setData} />
+        </div>
+        <div>
+          {loading && !data && <Spinner />}
+          {error && <Alert>{error}</Alert>}
+          {data && <SlotList barberId={userId} availability={data} onChange={setData} />}
         </div>
       </div>
     </>

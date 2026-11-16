@@ -5,6 +5,8 @@
   "description": "API da Barbearia: autentica\u00e7\u00e3o Google, usu\u00e1rios, disponibilidade e agendamentos.",
   "license": "UNLICENSED",
   "scripts": {
+    "prebuild": "npm run build --prefix ../../packages/shared",
+    "predev": "npm run build --prefix ../../packages/shared",
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
