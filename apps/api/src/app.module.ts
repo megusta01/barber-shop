@@ -1,35 +1,42 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { APP_GUARD } from '@nestjs/core'
+import { JwtModule } from '@nestjs/jwt'
 import { MongooseModule } from '@nestjs/mongoose'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
-import { AppointmentModule } from './appointment/appointment.module'
+
+import { AppointmentsModule } from './appointments/appointments.module'
 import { AuthModule } from './auth/auth.module'
-import { UserModule } from './user/user.module'
+import { AvailabilityModule } from './availability/availability.module'
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard'
+import { RolesGuard } from './common/guards/roles.guard'
+import { AppConfigService } from './config/app-config.service'
+import { AppConfigModule } from './config/config.module'
+import { HealthController } from './health.controller'
+import { UsersModule } from './users/users.module'
+
+export const DatabaseModule = MongooseModule.forRootAsync({
+  inject: [AppConfigService],
+  useFactory: (config: AppConfigService) => ({ uri: config.get('MONGO_URL') }),
+})
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URL'),
-        connectionFactory: (connection) => {
-          connection.on('error', (err: Error) => {
-            console.error('MongoDB Connection Error:', err)
-          })
-          return connection
-        },
-      }),
-    }),
+    AppConfigModule,
+    DatabaseModule,
+    // segredos e expiração são passados em cada sign/verify (access e refresh usam segredos diferentes)
+    JwtModule.register({ global: true }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     AuthModule,
-    UserModule,
-    AppointmentModule,
-    ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60, limit: 10 }],
-    }),
+    UsersModule,
+    AppointmentsModule,
+    AvailabilityModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  controllers: [HealthController],
+  providers: [
+    // a ordem importa: limite de requisições → autenticação → papéis
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}
