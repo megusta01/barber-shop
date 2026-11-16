@@ -6,7 +6,7 @@ export default function AdminUsersPage() {
     <>
       <PageHeader
         title="Usuários"
-        description="Defina quem é barbeiro, desative contas e remova usuários."
+        description="Defina quem é barbeiro, desative contas e remova quem não usa mais o app."
       />
       <UsersTable />
     </>

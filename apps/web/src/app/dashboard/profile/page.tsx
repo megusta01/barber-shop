@@ -7,7 +7,7 @@ import { Suspense, useCallback, useState } from 'react'
 import { Alert } from '@/components/ui/Alert'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Spinner'
 import { ProfileForm } from '@/features/profile/ProfileForm'
 import { useAsync } from '@/hooks/useAsync'
 import { usersApi } from '@/lib/api/endpoints'
@@ -35,21 +35,29 @@ function ProfileContent() {
       <PageHeader
         title={welcome ? 'Complete seu cadastro' : 'Seu perfil'}
         description={
-          welcome ? 'Confira seu nome e deixe um telefone para contato.' : 'Seus dados de contato.'
+          welcome
+            ? 'Confira seu nome e deixe um telefone para a barbearia falar com você.'
+            : 'Como a barbearia vê você e fala com você.'
         }
       />
       <Card>
-        {loading && <Spinner />}
+        {loading && (
+          <div className="space-y-4">
+            <Skeleton className="h-14" />
+            <Skeleton className="h-10" />
+            <Skeleton className="h-10" />
+          </div>
+        )}
         {error && <Alert>{error}</Alert>}
         {saved && (
-          <div className="mb-4">
-            <Alert tone="success">Perfil atualizado.</Alert>
-          </div>
+          <Alert tone="success" className="mb-6">
+            Perfil salvo.
+          </Alert>
         )}
         {user && (
           <ProfileForm
             user={user}
-            submitLabel={welcome ? 'Continuar' : 'Salvar'}
+            submitLabel={welcome ? 'Salvar e continuar' : 'Salvar perfil'}
             onSaved={(u) => void handleSaved(u)}
           />
         )}

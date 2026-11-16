@@ -48,11 +48,11 @@ export function ProfileForm({ user, submitLabel, onSaved }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 border-b border-line pb-6">
         <Avatar name={user.displayName} src={user.avatarUrl} size={56} />
         <div className="text-sm">
-          <p className="font-medium text-gray-900">{user.email}</p>
-          <p className="text-gray-500">Foto e e-mail vêm da sua conta Google.</p>
+          <p className="font-semibold text-ink">{user.email}</p>
+          <p className="text-muted">Foto e e-mail vêm da sua conta Google.</p>
         </div>
       </div>
 
@@ -86,7 +86,10 @@ export function ProfileForm({ user, submitLabel, onSaved }: Props) {
       </Field>
 
       {user.role === 'barber' && (
-        <Field label="Sobre você" hint="Aparece para os clientes na hora de escolher o barbeiro.">
+        <Field
+          label="Sobre você"
+          hint="Aparece para os clientes na hora de escolher o barbeiro. Ex.: especialidades e tempo de casa."
+        >
           {(id) => (
             <textarea
               id={id}
@@ -94,7 +97,7 @@ export function ProfileForm({ user, submitLabel, onSaved }: Props) {
               maxLength={500}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={inputClass}
+              className={`${inputClass} h-auto py-2`}
             />
           )}
         </Field>
@@ -102,7 +105,7 @@ export function ProfileForm({ user, submitLabel, onSaved }: Props) {
 
       {error && <Alert>{error}</Alert>}
 
-      <Button type="submit" loading={saving}>
+      <Button type="submit" size="lg" loading={saving}>
         {submitLabel}
       </Button>
     </form>
