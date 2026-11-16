@@ -7,6 +7,8 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { PublicFooter } from '@/components/layout/PublicFooter'
+
 const STEPS = [
   {
     icon: ScissorsIcon,
@@ -110,6 +112,8 @@ export function LandingPage() {
           </Link>
         </div>
       </section>
+
+      <PublicFooter />
     </main>
   )
 }

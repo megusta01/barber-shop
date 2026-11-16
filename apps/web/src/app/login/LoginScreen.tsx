@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
+import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Alert } from '@/components/ui/Alert'
 import { authApi } from '@/lib/api/endpoints'
 import { loginErrorMessage } from '@/lib/api/errors'
@@ -84,6 +85,8 @@ export function LoginScreen() {
           <p className="text-center text-xs text-gray-500">
             No primeiro acesso sua conta é criada automaticamente.
           </p>
+
+          <PublicFooter className="!py-0" />
         </div>
       </div>
     </div>
