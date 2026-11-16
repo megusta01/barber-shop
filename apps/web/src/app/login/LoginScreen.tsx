@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
+import { Brand } from '@/components/layout/Brand'
 import { PublicFooter } from '@/components/layout/PublicFooter'
 import { Alert } from '@/components/ui/Alert'
 import { authApi } from '@/lib/api/endpoints'
@@ -44,51 +44,44 @@ export function LoginScreen() {
   }, [status, session, router])
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-indigo-600 to-indigo-800 p-10 text-white md:flex">
-        <div className="max-w-md space-y-4">
-          <Image
-            src="/logo.png"
-            alt=""
-            width={96}
-            height={96}
-            className="rounded-full bg-white p-1"
-          />
-          <h1 className="text-4xl font-bold">Barbearia</h1>
-          <p className="text-lg text-indigo-100">
-            Plataforma moderna para agendamentos de barbearia com estilo e eficiência.
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <aside className="relative flex flex-col justify-between bg-charcoal px-6 py-6 text-paper md:w-[44%] md:px-12 md:py-10">
+        <div className="pole-stripe absolute inset-x-0 top-0 h-1.5" aria-hidden />
+        <Brand href="/" inverted />
+        <div className="hidden max-w-sm md:block">
+          <p className="font-display text-4xl font-semibold leading-tight tracking-tight">
+            Entre para agendar seu corte ou cuidar da sua agenda.
           </p>
-          <p className="text-sm text-indigo-200">
-            Administre seus horários, barbeiros e clientes com facilidade.
+          <p className="mt-4 text-stone-300">
+            Clientes, barbeiros e a administração da casa usam o mesmo acesso.
           </p>
         </div>
-      </div>
+        <span className="hidden md:block" />
+      </aside>
 
-      <div className="flex w-full items-center justify-center bg-gray-100 px-4 md:w-1/2">
-        <div className="w-full max-w-sm space-y-6 rounded-xl bg-white p-10 shadow-xl">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800">Bem-vindo!</h2>
-            <p className="mt-1 text-sm text-gray-500">Entre com sua conta do Google</p>
-          </div>
+      <main className="flex flex-1 items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm">
+          <h1 className="font-display text-3xl font-semibold tracking-tight">Entrar</h1>
+          <p className="mt-2 text-muted">Use sua conta Google. Não é preciso criar senha.</p>
 
-          {error && <Alert>{error}</Alert>}
+          {error && <Alert className="mt-6">{error}</Alert>}
 
           {/* navegação completa: o fluxo OAuth passa pelo Google e volta em /login/callback */}
           <a
             href={authApi.googleLoginUrl}
-            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-6 py-2 text-sm font-medium text-gray-800 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="mt-8 flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-line bg-white text-sm font-semibold text-ink shadow-sm transition-colors hover:border-muted/50 hover:bg-paper"
           >
             <GoogleIcon />
-            Entrar com Google
+            Continuar com o Google
           </a>
 
-          <p className="text-center text-xs text-gray-500">
-            No primeiro acesso sua conta é criada automaticamente.
+          <p className="mt-4 text-sm text-muted">
+            No primeiro acesso, sua conta é criada com o nome e o e-mail do Google.
           </p>
 
-          <PublicFooter className="!py-0" />
+          <PublicFooter className="mt-10" />
         </div>
-      </div>
+      </main>
     </div>
   )
 }

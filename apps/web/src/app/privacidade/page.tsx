@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Política de privacidade' }
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+      <h2 className="font-display text-xl font-semibold">{title}</h2>
       {children}
     </section>
   )
@@ -17,7 +17,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export default function PrivacyPage() {
   const contact = LEGAL.contactEmail ? (
-    <a href={`mailto:${LEGAL.contactEmail}`} className="font-medium text-indigo-600 underline">
+    <a href={`mailto:${LEGAL.contactEmail}`} className="font-medium text-brass-700 underline">
       {LEGAL.contactEmail}
     </a>
   ) : (
@@ -25,13 +25,15 @@ export default function PrivacyPage() {
   )
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12 text-sm leading-relaxed text-gray-700">
-      <Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+    <main className="mx-auto max-w-2xl px-4 py-12 leading-relaxed text-ink">
+      <Link href="/" className="text-sm font-medium text-brass-700 hover:text-charcoal">
         ← Voltar ao início
       </Link>
 
-      <h1 className="mb-2 mt-6 text-3xl font-bold text-gray-900">Política de privacidade</h1>
-      <p className="mb-10 text-gray-500">Atualizada em {LEGAL.updatedAt}.</p>
+      <h1 className="mb-2 mt-6 font-display text-4xl font-semibold tracking-tight">
+        Política de privacidade
+      </h1>
+      <p className="mb-10 text-muted">Atualizada em {LEGAL.updatedAt}.</p>
 
       <div className="space-y-10">
         <Section title="1. Quem somos">
@@ -96,7 +98,7 @@ export default function PrivacyPage() {
             O uso e a transferência das informações recebidas das APIs do Google seguem a{' '}
             <a
               href="https://developers.google.com/terms/api-services-user-data-policy"
-              className="font-medium text-indigo-600 underline"
+              className="font-medium text-brass-700 underline"
               target="_blank"
               rel="noreferrer"
             >
