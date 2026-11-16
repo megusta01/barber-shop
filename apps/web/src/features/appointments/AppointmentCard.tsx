@@ -35,9 +35,13 @@ interface Props {
   appointment: AppointmentDto
   viewer: Role
   onChange: (updated: AppointmentDto) => void
+  /** Esconde o canhoto de data (listas de um único dia). */
+  hideDate?: boolean
+  /** Destaca o card como o próximo atendimento. */
+  highlight?: boolean
 }
 
-export function AppointmentCard({ appointment, viewer, onChange }: Props) {
+export function AppointmentCard({ appointment, viewer, onChange, hideDate, highlight }: Props) {
   const [saving, setSaving] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -69,10 +73,17 @@ export function AppointmentCard({ appointment, viewer, onChange }: Props) {
 
   return (
     <li
-      className={`rounded-xl border bg-white p-4 sm:p-5 ${finished ? 'border-line/70' : 'border-line'}`}
+      className={`rounded-xl border bg-white p-4 sm:p-5 ${
+        highlight
+          ? 'border-brass-500 ring-1 ring-brass-500'
+          : finished
+            ? 'border-line/70'
+            : 'border-line'
+      }`}
     >
+      {highlight && <p className="mb-3 text-sm font-semibold text-brass-700">Próximo cliente</p>}
       <div className="flex gap-4">
-        <DateStub iso={appointment.date} muted={finished} />
+        {!hideDate && <DateStub iso={appointment.date} muted={finished} />}
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">

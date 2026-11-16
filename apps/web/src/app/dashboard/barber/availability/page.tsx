@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 
 import { Alert } from '@/components/ui/Alert'
 import { PageHeader } from '@/components/ui/PageHeader'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Spinner'
 import { AddSlotsForm } from '@/features/availability/AddSlotsForm'
 import { SlotList } from '@/features/availability/SlotList'
 import { useAsync } from '@/hooks/useAsync'
@@ -18,13 +18,14 @@ export default function AvailabilityPage() {
 
   return (
     <>
-      <PageHeader title="Disponibilidade" description="Abra horários para os clientes agendarem." />
-      <div className="grid gap-6 lg:grid-cols-[22rem,1fr]">
+      <PageHeader
+        title="Meus horários"
+        description="Os horários abertos aqui são os que os clientes podem reservar."
+      />
+      <div className="grid items-start gap-6 lg:grid-cols-[24rem_1fr]">
+        <AddSlotsForm barberId={userId} onAdded={setData} />
         <div>
-          <AddSlotsForm barberId={userId} onAdded={setData} />
-        </div>
-        <div>
-          {loading && !data && <Spinner />}
+          {loading && !data && <Skeleton className="h-64" />}
           {error && <Alert>{error}</Alert>}
           {data && <SlotList barberId={userId} availability={data} onChange={setData} />}
         </div>
