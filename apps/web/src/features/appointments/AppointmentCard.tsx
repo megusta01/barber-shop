@@ -2,21 +2,34 @@
 
 import {
   allowedStatuses,
-  APPOINTMENT_STATUS_LABELS,
   AppointmentDto,
   AppointmentStatus,
   occupiesSlot,
   Role,
   SERVICE_LABELS,
 } from '@barbearia/shared'
+import { CheckIcon } from '@heroicons/react/20/solid'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
-import { inputBase } from '@/components/ui/Field'
-import { StatusBadge } from '@/components/ui/StatusBadge'
+import { DateStub } from '@/components/ui/DateStub'
+import { PaidBadge, StatusBadge } from '@/components/ui/StatusBadge'
 import { appointmentsApi } from '@/lib/api/endpoints'
 import { errorMessage } from '@/lib/api/errors'
-import { formatDateTime } from '@/lib/format'
+import { formatTime } from '@/lib/format'
+
+/** Rótulo de cada ação de status, do ponto de vista de quem clica. */
+const ACTIONS: Partial<Record<AppointmentStatus, string>> = {
+  confirmed: 'Confirmar',
+  completed: 'Concluir',
+  cancelled: 'Cancelar',
+}
+
+const CONFIRM_CANCEL: Record<Role, string> = {
+  client: 'Cancelar este agendamento? O horário fica livre para outra pessoa.',
+  barber: 'Cancelar este atendimento? O cliente verá o agendamento como cancelado.',
+  admin: 'Cancelar este agendamento?',
+}
 
 interface Props {
   appointment: AppointmentDto
@@ -25,93 +38,127 @@ interface Props {
 }
 
 export function AppointmentCard({ appointment, viewer, onChange }: Props) {
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const isClient = viewer === 'client'
   const isUpcoming = new Date(appointment.date).getTime() > Date.now()
-  const statusOptions = allowedStatuses(viewer, appointment.status)
+  const finished = !occupiesSlot(appointment.status)
+  const nextStatuses = allowedStatuses(viewer, appointment.status).filter(
+    (s) => s !== appointment.status,
+  )
+  // a pessoa do outro lado do agendamento
+  const other = viewer === 'barber' ? appointment.customer : appointment.barber
 
-  async function save(changes: { status?: AppointmentStatus; isPaid?: boolean }) {
-    setSaving(true)
+  async function save(key: string, changes: { status?: AppointmentStatus; isPaid?: boolean }) {
+    if (changes.status === 'cancelled' && !window.confirm(CONFIRM_CANCEL[viewer])) return
+    setSaving(key)
     setError(null)
     try {
       onChange(await appointmentsApi.update(appointment.id, changes))
     } catch (err) {
       setError(errorMessage(err))
     } finally {
-      setSaving(false)
+      setSaving(null)
     }
   }
 
-  function cancel() {
-    if (window.confirm('Cancelar este agendamento? O horário volta a ficar livre.')) {
-      void save({ status: AppointmentStatus.CANCELLED })
-    }
-  }
+  const showClientCancel = isClient && isUpcoming && !finished
+  const showStaffActions =
+    !isClient && (nextStatuses.length > 0 || appointment.status !== 'cancelled')
 
   return (
-    <li className="rounded-lg bg-white p-4 ring-1 ring-gray-200">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1 text-sm">
-          <p className="font-semibold text-gray-900">{formatDateTime(appointment.date)}</p>
-          <p className="text-gray-700">{SERVICE_LABELS[appointment.service]}</p>
-          {viewer !== 'barber' && (
-            <p className="text-gray-500">Barbeiro: {appointment.barber.displayName}</p>
-          )}
-          {viewer !== 'client' && (
-            <p className="text-gray-500">Cliente: {appointment.customer.displayName}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {appointment.isPaid && (
-            <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-200">
-              Pago
+    <li
+      className={`rounded-xl border bg-white p-4 sm:p-5 ${finished ? 'border-line/70' : 'border-line'}`}
+    >
+      <div className="flex gap-4">
+        <DateStub iso={appointment.date} muted={finished} />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+            <p
+              className={`font-display text-2xl font-semibold tabular-nums leading-none ${
+                appointment.status === 'cancelled' ? 'text-muted line-through' : 'text-charcoal'
+              }`}
+            >
+              {formatTime(appointment.date)}
+            </p>
+            <div className="flex items-center gap-1.5">
+              {appointment.isPaid && <PaidBadge />}
+              <StatusBadge status={appointment.status} />
+            </div>
+          </div>
+          <p className="mt-2 font-semibold text-ink">{SERVICE_LABELS[appointment.service]}</p>
+          <div className="mt-0.5 text-sm text-muted">
+            <span>
+              {viewer === 'barber' && other.displayName}
+              {viewer === 'client' && `com ${other.displayName}`}
+              {viewer === 'admin' &&
+                `${appointment.customer.displayName} com ${appointment.barber.displayName}`}
             </span>
-          )}
-          <StatusBadge status={appointment.status} />
+          </div>
         </div>
       </div>
 
-      {isClient && isUpcoming && occupiesSlot(appointment.status) && (
-        <div className="mt-3 flex justify-end">
-          <Button variant="secondary" onClick={cancel} loading={saving}>
-            Cancelar agendamento
-          </Button>
-        </div>
-      )}
-
-      {!isClient && (
-        <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-gray-100 pt-3 text-sm">
-          <label className="flex items-center gap-2">
-            <span className="text-gray-600">Status</span>
-            <select
-              value={appointment.status}
-              disabled={saving || statusOptions.length < 2}
-              onChange={(e) => void save({ status: e.target.value as AppointmentStatus })}
-              className={`${inputBase} py-1`}
+      {(showClientCancel || showStaffActions) && (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-dashed border-line pt-4">
+          {showClientCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="-ml-3 text-red-700 hover:bg-red-50"
+              loading={saving === 'cancelled'}
+              onClick={() => void save('cancelled', { status: 'cancelled' })}
             >
-              {statusOptions.map((s) => (
-                <option key={s} value={s}>
-                  {APPOINTMENT_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 text-gray-600">
-            <input
-              type="checkbox"
-              checked={appointment.isPaid}
-              disabled={saving}
-              onChange={(e) => void save({ isPaid: e.target.checked })}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            Pago
-          </label>
+              Cancelar agendamento
+            </Button>
+          )}
+
+          {!isClient &&
+            nextStatuses.map((s) => (
+              <Button
+                key={s}
+                size="sm"
+                variant={
+                  s === 'cancelled' ? 'danger' : s === nextStatuses[0] ? 'primary' : 'secondary'
+                }
+                loading={saving === s}
+                disabled={saving !== null}
+                onClick={() => void save(s, { status: s })}
+              >
+                {ACTIONS[s]}
+              </Button>
+            ))}
+
+          {!isClient && appointment.status !== 'cancelled' && (
+            <button
+              type="button"
+              aria-pressed={appointment.isPaid}
+              disabled={saving !== null}
+              onClick={() => void save('paid', { isPaid: !appointment.isPaid })}
+              className={`ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors disabled:opacity-50 ${
+                appointment.isPaid
+                  ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                  : 'text-muted hover:bg-charcoal/5 hover:text-ink'
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`flex h-4 w-4 items-center justify-center rounded border ${
+                  appointment.isPaid
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'border-muted'
+                }`}
+              >
+                {appointment.isPaid && <CheckIcon className="h-3 w-3" />}
+              </span>
+              Pago
+            </button>
+          )}
         </div>
       )}
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
     </li>
   )
 }

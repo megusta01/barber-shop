@@ -1,14 +1,17 @@
 'use client'
 
 import type { AppointmentDto, Paginated, Role } from '@barbearia/shared'
+import { CalendarDaysIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
 import { Alert } from '@/components/ui/Alert'
-import { Button } from '@/components/ui/Button'
+import { Button, buttonClass } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Spinner'
 import { appointmentsApi, ListAppointmentsParams } from '@/lib/api/endpoints'
 import { errorMessage } from '@/lib/api/errors'
+import { formatRelativeDay, groupByDay } from '@/lib/format'
 
 import { AppointmentCard } from './AppointmentCard'
 
@@ -18,7 +21,7 @@ const PAGE_SIZE = 20
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'upcoming', label: 'Próximos' },
-  { id: 'past', label: 'Histórico' },
+  { id: 'past', label: 'Anteriores' },
 ]
 
 function paramsFor(tab: Tab, page: number): ListAppointmentsParams {
@@ -28,7 +31,26 @@ function paramsFor(tab: Tab, page: number): ListAppointmentsParams {
     : { to: now, order: 'desc', page, limit: PAGE_SIZE }
 }
 
-/** Lista paginada de agendamentos com abas Próximos/Histórico. A API filtra pelo usuário logado. */
+function emptyFor(viewer: Role, tab: Tab) {
+  if (tab === 'past')
+    return {
+      title: 'Nada por aqui ainda',
+      body: 'Os atendimentos que já passaram aparecem nesta aba.',
+    }
+  if (viewer === 'client')
+    return {
+      title: 'Você não tem horários marcados',
+      body: 'Escolha um barbeiro e um horário livre.',
+    }
+  if (viewer === 'barber')
+    return {
+      title: 'Nenhum cliente agendado',
+      body: 'Quando alguém reservar um dos seus horários, ele aparece aqui.',
+    }
+  return { title: 'Nenhum agendamento futuro', body: undefined }
+}
+
+/** Lista paginada de agendamentos, agrupada por dia. A API filtra pelo usuário logado. */
 export function AppointmentsView({ viewer }: { viewer: Role }) {
   const [tab, setTab] = useState<Tab>('upcoming')
   const [result, setResult] = useState<Paginated<AppointmentDto> | null>(null)
@@ -62,10 +84,11 @@ export function AppointmentsView({ viewer }: { viewer: Role }) {
     )
 
   const hasMore = result ? result.items.length < result.total : false
+  const empty = emptyFor(viewer, tab)
 
   return (
-    <div className="space-y-4">
-      <div role="tablist" className="inline-flex rounded-lg bg-gray-200/70 p-1">
+    <div className="space-y-6">
+      <div role="tablist" className="inline-flex rounded-lg border border-line bg-white p-1">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -73,10 +96,8 @@ export function AppointmentsView({ viewer }: { viewer: Role }) {
             type="button"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
-              tab === t.id
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+            className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
+              tab === t.id ? 'bg-charcoal text-paper' : 'text-muted hover:text-ink'
             }`}
           >
             {t.label}
@@ -86,25 +107,42 @@ export function AppointmentsView({ viewer }: { viewer: Role }) {
 
       {error && <Alert>{error}</Alert>}
 
-      {result && result.items.length === 0 && !loading && (
-        <EmptyState
-          title={tab === 'upcoming' ? 'Nenhum agendamento futuro.' : 'Nenhum agendamento anterior.'}
-        />
-      )}
-
-      {result && result.items.length > 0 && (
-        <ul className="space-y-3">
-          {result.items.map((a) => (
-            <AppointmentCard key={a.id} appointment={a} viewer={viewer} onChange={replace} />
-          ))}
-        </ul>
-      )}
-
       {loading && !result && (
-        <div className="flex justify-center py-10">
-          <Spinner />
+        <div className="space-y-3">
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
         </div>
       )}
+
+      {result && result.items.length === 0 && !loading && (
+        <EmptyState
+          icon={CalendarDaysIcon}
+          title={empty.title}
+          action={
+            viewer === 'client' && tab === 'upcoming' ? (
+              <Link href="/dashboard/client" className={buttonClass('primary')}>
+                Agendar horário
+              </Link>
+            ) : undefined
+          }
+        >
+          {empty.body}
+        </EmptyState>
+      )}
+
+      {result &&
+        groupByDay(result.items, (a) => a.date).map(([day, items]) => (
+          <section key={day} aria-label={formatRelativeDay(items[0].date)}>
+            <h2 className="mb-3 text-sm font-semibold text-muted">
+              {formatRelativeDay(items[0].date)}
+            </h2>
+            <ul className="space-y-3">
+              {items.map((a) => (
+                <AppointmentCard key={a.id} appointment={a} viewer={viewer} onChange={replace} />
+              ))}
+            </ul>
+          </section>
+        ))}
 
       {hasMore && result && (
         <div className="flex justify-center">

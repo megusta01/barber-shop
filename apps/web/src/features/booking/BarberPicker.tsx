@@ -1,4 +1,6 @@
 import type { BarberDto } from '@barbearia/shared'
+import { CheckCircleIcon } from '@heroicons/react/20/solid'
+import { ScissorsIcon } from '@heroicons/react/24/outline'
 
 import { Avatar } from '@/components/ui/Avatar'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -11,7 +13,11 @@ interface Props {
 
 export function BarberPicker({ barbers, selectedId, onSelect }: Props) {
   if (barbers.length === 0) {
-    return <EmptyState title="Nenhum barbeiro disponível no momento." />
+    return (
+      <EmptyState icon={ScissorsIcon} title="Nenhum barbeiro atendendo agora">
+        Assim que a barbearia cadastrar os barbeiros, eles aparecem aqui.
+      </EmptyState>
+    )
   }
 
   return (
@@ -24,21 +30,25 @@ export function BarberPicker({ barbers, selectedId, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(barber)}
               aria-pressed={selected}
-              className={`flex w-full items-start gap-3 rounded-lg p-4 text-left ring-1 transition ${
+              className={`relative flex h-full w-full items-start gap-4 rounded-xl border bg-white p-4 text-left transition-colors ${
                 selected
-                  ? 'bg-indigo-50 ring-2 ring-indigo-500'
-                  : 'bg-white ring-gray-200 hover:ring-indigo-300'
+                  ? 'border-brass-500 ring-1 ring-brass-500'
+                  : 'border-line hover:border-muted/50'
               }`}
             >
-              <Avatar name={barber.displayName} src={barber.avatarUrl} />
-              <span>
-                <span className="block font-medium text-gray-900">{barber.displayName}</span>
-                {barber.description && (
-                  <span className="mt-0.5 line-clamp-2 block text-xs text-gray-500">
-                    {barber.description}
-                  </span>
-                )}
+              <Avatar name={barber.displayName} src={barber.avatarUrl} size={48} />
+              <span className="min-w-0 pr-6">
+                <span className="block font-semibold text-charcoal">{barber.displayName}</span>
+                <span className="mt-0.5 line-clamp-2 block text-sm text-muted">
+                  {barber.description || 'Barbeiro da casa'}
+                </span>
               </span>
+              {selected && (
+                <CheckCircleIcon
+                  className="absolute right-3 top-3 h-5 w-5 text-brass-500"
+                  aria-hidden
+                />
+              )}
             </button>
           </li>
         )
