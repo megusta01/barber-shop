@@ -4,6 +4,51 @@
 
 @layer base {
   html {
-    @apply bg-gray-50 text-gray-800 antialiased;
+    @apply bg-paper font-sans text-ink antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply text-charcoal;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    @apply bg-brass-200 text-charcoal;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brass-500 ring-offset-2 ring-offset-paper;
+  }
+}
+
+@layer components {
+  /* Títulos em serifa; o eixo óptico do Fraunces se ajusta ao tamanho */
+  .font-display {
+    font-optical-sizing: auto;
+    font-variation-settings: 'SOFT' 50;
+  }
+
+  /* Faixa listrada inspirada no poste de barbeiro: o único ornamento da identidade */
+  .pole-stripe {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      theme('colors.charcoal.DEFAULT') 0 8px,
+      theme('colors.paper') 8px 12px,
+      theme('colors.brass.500') 12px 20px,
+      theme('colors.paper') 20px 24px
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
