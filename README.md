@@ -94,14 +94,14 @@ Regras de status: `pendente → confirmado | concluído | cancelado`, `confirmad
 
 **API (ex.: Render)** — diretório raiz do repositório:
 
-- Build: `npm ci && npm run build -w @barbearia/api`
+- Build: `npm ci --include=dev && npm run build -w @barbearia/api` (o `--include=dev` é necessário porque, com `NODE_ENV=production`, o npm pularia as ferramentas de build)
 - Start: `npm run start -w @barbearia/api`
 - Health check: `/health`
 - Variáveis: as de `apps/api/.env.example`, com `NODE_ENV=production` (desliga o Swagger) e `FRONTEND_URL` apontando para o front publicado.
 
 Ou com Docker, a partir da raiz: `docker build -f apps/api/Dockerfile -t barbearia-api .`
 
-**Front (ex.: Vercel)** — Root Directory `apps/web`, com `NEXT_PUBLIC_API_BASE_URL` apontando para a API.
+**Front (ex.: Vercel)** — Root Directory `apps/web`, Install Command `cd ../.. && npm ci` (instala pela raiz do monorepo) e `NEXT_PUBLIC_API_BASE_URL` apontando para a API.
 
 ## Migrando um banco da versão anterior
 
