@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer'
+import { plainToInstance, Type } from 'class-transformer'
 import { IsIn, IsInt, IsNotEmpty, IsString, IsUrl, Max, Min, validateSync } from 'class-validator'
 
 export class EnvironmentVariables {
@@ -8,7 +8,7 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   @Max(65535)
-  PORT = 3000
+  PORT : number = 3000
 
   @IsString()
   @IsNotEmpty()
