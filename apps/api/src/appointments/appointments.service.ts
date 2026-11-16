@@ -1,7 +1,9 @@
 import {
   ACTIVE_APPOINTMENT_STATUSES,
   AppointmentDto,
+  canTransition,
   ErrorCode,
+  occupiesSlot,
   Paginated,
   Role,
 } from '@barbearia/shared'
@@ -19,7 +21,6 @@ import { BarberSchedule } from '../availability/barber-schedule.schema'
 import type { AuthUser } from '../common/types'
 import { sameId } from '../common/utils/same-id'
 import { User } from '../users/user.schema'
-import { canTransition, occupiesSlot } from './appointment-rules'
 import { Appointment, buildSlotKey } from './appointment.schema'
 import { PopulatedAppointment, toAppointmentDto } from './appointments.mapper'
 import { CreateAppointmentDto } from './dto/create-appointment.dto'

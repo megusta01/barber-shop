@@ -1,6 +1,10 @@
-import { AppointmentStatus, Role } from '@barbearia/shared'
-
-import { canTransition, occupiesSlot } from './appointment-rules'
+import {
+  allowedStatuses,
+  AppointmentStatus,
+  canTransition,
+  occupiesSlot,
+  Role,
+} from '@barbearia/shared'
 
 const { PENDING, CONFIRMED, COMPLETED, CANCELLED } = AppointmentStatus
 
@@ -32,5 +36,18 @@ describe('regras de status', () => {
       false,
       false,
     ])
+  })
+})
+
+describe('allowedStatuses', () => {
+  it('lista o atual e os próximos permitidos', () => {
+    expect(allowedStatuses(Role.BARBER, PENDING)).toEqual([
+      PENDING,
+      CONFIRMED,
+      COMPLETED,
+      CANCELLED,
+    ])
+    expect(allowedStatuses(Role.CLIENT, CONFIRMED)).toEqual([CONFIRMED, CANCELLED])
+    expect(allowedStatuses(Role.ADMIN, COMPLETED)).toEqual([COMPLETED])
   })
 })

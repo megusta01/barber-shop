@@ -39,3 +39,34 @@ export const SERVICE_LABELS: Record<ServiceType, string> = {
   'haircut and shave': 'Corte e barba',
   'beard trim': 'Aparar barba',
 }
+
+const { PENDING, CONFIRMED, COMPLETED, CANCELLED } = AppointmentStatus
+
+/** Transições de status permitidas. Concluído e cancelado são finais. */
+export const STATUS_TRANSITIONS: Record<AppointmentStatus, readonly AppointmentStatus[]> = {
+  [PENDING]: [CONFIRMED, COMPLETED, CANCELLED],
+  [CONFIRMED]: [COMPLETED, CANCELLED],
+  [COMPLETED]: [],
+  [CANCELLED]: [],
+}
+
+/** Se `role` pode levar um agendamento de `from` para `to`. Clientes só podem cancelar. */
+export function canTransition(
+  role: 'client' | 'barber' | 'admin',
+  from: AppointmentStatus,
+  to: AppointmentStatus,
+): boolean {
+  if (from === to) return true
+  if (!STATUS_TRANSITIONS[from].includes(to)) return false
+  if (role === 'client') return to === CANCELLED
+  return true
+}
+
+/** Status que o papel pode escolher a partir do atual (inclui o atual). */
+export const allowedStatuses = (
+  role: 'client' | 'barber' | 'admin',
+  from: AppointmentStatus,
+): AppointmentStatus[] => APPOINTMENT_STATUSES.filter((to) => canTransition(role, from, to))
+
+export const occupiesSlot = (status: AppointmentStatus): boolean =>
+  ACTIVE_APPOINTMENT_STATUSES.includes(status)
