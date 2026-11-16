@@ -1,146 +1,78 @@
-import { Test, TestingModule } from '@nestjs/testing'
-import { GoogleStrategy } from './strategies/google.strategy'
-import { UserService } from 'src/user/user.service'
+import { ErrorCode, Role } from '@barbearia/shared'
+import { UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { Roles } from './dto/roles'
+import { Types } from 'mongoose'
 
-describe('GoogleStrategy', () => {
-  let googleStrategy: GoogleStrategy
-  let userService: UserService
-  let jwtService: JwtService
+import { oid } from '../test-utils/query-mock'
+import { AuthService } from './auth.service'
 
-  beforeAll(() => {
-    process.env.GOOGLE_CLIENT_ID = 'test-client-id'
-    process.env.GOOGLE_CLIENT_SECRET = 'test-client-secret'
-    process.env.GOOGLE_CALLBACK_URL =
-      'http://localhost:3000/auth/google/callback'
+const env: Record<string, string> = {
+  JWT_ACCESS_SECRET: 'access-secret',
+  JWT_REFRESH_SECRET: 'refresh-secret',
+  JWT_ACCESS_TTL: '15m',
+  JWT_REFRESH_TTL: '7d',
+  FRONTEND_URL: 'http://localhost:3001',
+}
+
+function setup(user: Record<string, unknown> | null) {
+  const jwt = new JwtService()
+  const config = { get: (key: string) => env[key] }
+  const users = { findDocumentById: jest.fn().mockResolvedValue(user) }
+  const service = new AuthService(jwt, config as any, users as any)
+  return { service, jwt }
+}
+
+const subject = { id: oid(1), email: 'c@x.com', role: Role.CLIENT, displayName: 'Cliente' }
+
+describe('AuthService', () => {
+  it('access token carrega sub, email, papel e nome', async () => {
+    const { service, jwt } = setup(null)
+    const { accessToken } = await service.issueTokens(subject)
+    const payload = jwt.verify(accessToken, { secret: env.JWT_ACCESS_SECRET })
+    expect(payload).toMatchObject({
+      sub: oid(1),
+      email: 'c@x.com',
+      role: 'client',
+      name: 'Cliente',
+    })
   })
 
-  const mockUserService = {
-    findOnCreate: jest.fn(),
-    markFirstLoginCompleted: jest.fn(),
-  }
+  it('refresh relê o usuário e reflete a mudança de papel', async () => {
+    const { service, jwt } = setup({
+      _id: new Types.ObjectId(oid(1)),
+      email: 'c@x.com',
+      role: Role.BARBER,
+      displayName: 'Cliente',
+      isActive: true,
+    })
+    const { refreshToken } = await service.issueTokens(subject)
 
-  const mockJwtService = {
-    sign: jest.fn().mockReturnValue('mocked-token'),
-  }
+    const tokens = await service.refresh(refreshToken)
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        GoogleStrategy,
-        { provide: UserService, useValue: mockUserService },
-        { provide: JwtService, useValue: mockJwtService },
-      ],
-    }).compile()
-
-    googleStrategy = module.get<GoogleStrategy>(GoogleStrategy)
-    userService = module.get<UserService>(UserService)
-    jwtService = module.get<JwtService>(JwtService)
+    expect(jwt.decode(tokens.accessToken)).toMatchObject({ role: 'barber' })
   })
 
-  it('should be defined', () => {
-    expect(googleStrategy).toBeDefined()
+  it('refresh recusa access token no lugar do refresh', async () => {
+    const { service } = setup(null)
+    const { accessToken } = await service.issueTokens(subject)
+    await expect(service.refresh(accessToken)).rejects.toThrow(UnauthorizedException)
   })
 
-  it('should authenticate an existing user and return tokens', async () => {
-    const mockProfile = {
-      id: 'google-id-123',
-      displayName: 'John Doe',
-      emails: [{ value: 'john.doe@example.com' }],
-      photos: [{ value: 'http://example.com/avatar.jpg' }],
-    }
-
-    const mockUser = {
-      _id: 'user-id-123',
-      googleId: 'google-id-123',
-      email: 'john.doe@example.com',
-      displayName: 'John Doe',
-      avatarUrl: 'http://example.com/avatar.jpg',
-      role: Roles.CLIENT,
-      isFirstLogin: false,
-    }
-
-    mockUserService.findOnCreate.mockResolvedValue(mockUser)
-
-    const done = jest.fn()
-    await googleStrategy.validate(
-      'access-token',
-      'refresh-token',
-      mockProfile,
-      done,
+  it('refresh recusa usuário desativado', async () => {
+    const { service } = setup({ _id: new Types.ObjectId(oid(1)), isActive: false })
+    const { refreshToken } = await service.issueTokens(subject)
+    await expect(service.refresh(refreshToken)).rejects.toThrow(
+      new UnauthorizedException(ErrorCode.USER_INACTIVE),
     )
-
-    expect(mockUserService.findOnCreate).toHaveBeenCalledWith({
-      googleId: 'google-id-123',
-      email: 'john.doe@example.com',
-      displayName: 'John Doe',
-      avatarUrl: 'http://example.com/avatar.jpg',
-      role: Roles.CLIENT,
-      phone: '',
-      description: '',
-    })
-
-    expect(jwtService.sign).toHaveBeenCalledTimes(2)
-    expect(done).toHaveBeenCalledWith(null, {
-      user: mockUser,
-      jwtAccessToken: 'mocked-token',
-      jwtRefreshToken: 'mocked-token',
-      isFirstLogin: false,
-    })
   })
 
-  it('should create a new user if not found and return tokens', async () => {
-    const mockProfile = {
-      id: 'google-id-123',
-      displayName: 'Jane Doe',
-      emails: [{ value: 'jane.doe@example.com' }],
-      photos: [{ value: 'http://example.com/avatar2.jpg' }],
-    }
-
-    const mockNewUser = {
-      _id: 'new-user-id-456',
-      googleId: 'google-id-123',
-      email: 'jane.doe@example.com',
-      displayName: 'Jane Doe',
-      avatarUrl: 'http://example.com/avatar2.jpg',
-      role: Roles.CLIENT,
-      isFirstLogin: true,
-    }
-
-    const mockUpdatedUser = { ...mockNewUser, isFirstLogin: false }
-
-    mockUserService.findOnCreate.mockResolvedValue(mockNewUser)
-    mockUserService.markFirstLoginCompleted.mockResolvedValue(mockUpdatedUser)
-
-    const done = jest.fn()
-    await googleStrategy.validate(
-      'access-token',
-      'refresh-token',
-      mockProfile,
-      done,
+  it('manda os tokens para o front no fragmento da URL', () => {
+    const { service } = setup(null)
+    const url = new URL(
+      service.buildLoginCallbackUrl({ accessToken: 'a', refreshToken: 'r' }, true),
     )
-
-    expect(mockUserService.findOnCreate).toHaveBeenCalledWith({
-      googleId: 'google-id-123',
-      email: 'jane.doe@example.com',
-      displayName: 'Jane Doe',
-      avatarUrl: 'http://example.com/avatar2.jpg',
-      role: Roles.CLIENT,
-      phone: '',
-      description: '',
-    })
-
-    expect(mockUserService.markFirstLoginCompleted).toHaveBeenCalledWith(
-      'google-id-123',
-    )
-
-    expect(jwtService.sign).toHaveBeenCalledTimes(4)
-    expect(done).toHaveBeenCalledWith(null, {
-      user: mockUpdatedUser,
-      jwtAccessToken: 'mocked-token',
-      jwtRefreshToken: 'mocked-token',
-      isFirstLogin: false,
-    })
+    expect(url.origin + url.pathname).toBe('http://localhost:3001/login/callback')
+    expect(url.search).toBe('')
+    expect(new URLSearchParams(url.hash.slice(1)).get('first_login')).toBe('1')
   })
 })
