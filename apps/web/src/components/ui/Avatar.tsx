@@ -16,7 +16,7 @@ export function Avatar({ name, src, size = 40 }: { name: string; src?: string; s
         alt=""
         width={size}
         height={size}
-        className="rounded-full object-cover"
+        className="shrink-0 rounded-full object-cover ring-1 ring-line"
         referrerPolicy="no-referrer"
       />
     )
@@ -25,8 +25,8 @@ export function Avatar({ name, src, size = 40 }: { name: string; src?: string; s
   return (
     <span
       aria-hidden
-      style={{ width: size, height: size }}
-      className="inline-flex items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700"
+      style={{ width: size, height: size, fontSize: Math.max(12, size * 0.36) }}
+      className="inline-flex shrink-0 items-center justify-center rounded-full bg-charcoal font-display font-semibold text-brass-200"
     >
       {initials}
     </span>

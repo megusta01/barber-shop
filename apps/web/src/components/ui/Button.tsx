@@ -1,40 +1,57 @@
-import { ButtonHTMLAttributes } from 'react'
+import { ButtonHTMLAttributes, forwardRef } from 'react'
 
 import { Spinner } from './Spinner'
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
+type Variant = 'primary' | 'accent' | 'secondary' | 'danger' | 'ghost'
+type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:ring-indigo-500',
-  secondary:
-    'border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 focus-visible:ring-indigo-500',
-  danger: 'bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500',
-  ghost: 'text-gray-700 hover:bg-gray-100 focus-visible:ring-indigo-500',
+  primary: 'bg-charcoal text-paper hover:bg-charcoal-700 active:bg-charcoal-800',
+  accent: 'bg-brass-500 text-charcoal hover:bg-brass-600 hover:text-paper',
+  secondary: 'border border-line bg-white text-ink hover:border-muted/50 hover:bg-paper',
+  danger: 'border border-red-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50',
+  ghost: 'text-ink hover:bg-charcoal/5',
 }
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+const SIZES: Record<Size, string> = {
+  sm: 'h-8 px-3 text-sm',
+  md: 'h-10 px-4 text-sm',
+  lg: 'h-12 px-6 text-base',
+}
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
+  size?: Size
   loading?: boolean
 }
 
-export function Button({
-  variant = 'primary',
-  loading = false,
-  disabled,
-  className = '',
-  children,
-  type = 'button',
-  ...rest
-}: ButtonProps) {
+export const buttonClass = (variant: Variant = 'primary', size: Size = 'md', extra = '') =>
+  `inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${extra}`
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    disabled,
+    className = '',
+    children,
+    type = 'button',
+    ...rest
+  },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type={type}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      aria-busy={loading || undefined}
+      className={buttonClass(variant, size, className)}
       {...rest}
     >
       {loading && <Spinner className="h-4 w-4" />}
       {children}
     </button>
   )
-}
+})

@@ -6,16 +6,16 @@ export function PageHeader({
   actions,
 }: {
   title: string
-  description?: string
+  description?: ReactNode
   actions?: ReactNode
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-        {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+        {description && <p className="mt-2 max-w-prose text-muted">{description}</p>}
       </div>
-      {actions}
+      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>
   )
 }

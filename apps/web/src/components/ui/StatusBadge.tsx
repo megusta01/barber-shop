@@ -1,18 +1,26 @@
 import { APPOINTMENT_STATUS_LABELS, AppointmentStatus } from '@barbearia/shared'
 
-const COLORS: Record<AppointmentStatus, string> = {
-  pending: 'bg-amber-50 text-amber-700 ring-amber-200',
-  confirmed: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-  completed: 'bg-green-50 text-green-700 ring-green-200',
-  cancelled: 'bg-gray-100 text-gray-600 ring-gray-200',
+const STYLES: Record<AppointmentStatus, string> = {
+  pending: 'bg-brass-100 text-brass-700',
+  confirmed: 'bg-charcoal text-paper',
+  completed: 'bg-emerald-50 text-emerald-800',
+  cancelled: 'bg-line/60 text-muted',
 }
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${COLORS[status]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STYLES[status]}`}
     >
       {APPOINTMENT_STATUS_LABELS[status]}
+    </span>
+  )
+}
+
+export function PaidBadge() {
+  return (
+    <span className="inline-flex items-center rounded-full border border-emerald-200 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+      Pago
     </span>
   )
 }
